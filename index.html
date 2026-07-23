@@ -155,6 +155,18 @@
   .help-block p,.help-block li{font-size:13px;line-height:1.7;color:var(--slate-2);margin:0 0 8px;}
   .help-block ol,.help-block ul{padding-left:20px;margin:0 0 10px;}
   .kbd{font-family:var(--mono);background:var(--cream);border:1px solid var(--line);border-radius:4px;padding:1px 6px;font-size:12px;}
+  /* kalkulator */
+  .calc-out{background:var(--cream);border:1px dashed var(--orange-light);border-radius:8px;
+    padding:13px 15px;margin-top:13px;display:flex;flex-wrap:wrap;gap:20px;}
+  .calc-out .co{min-width:96px;}
+  .calc-out .co span{display:block;font-size:9.5px;color:var(--orange-deep);
+    letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px;}
+  .calc-out .co b{font-family:var(--mono);font-size:17px;font-weight:700;}
+  .calc-out.muted{background:#F7F4EF;border-color:var(--line);color:var(--gray);
+    display:block;font-size:12.5px;padding:14px 15px;}
+  .calc-note{font-size:11.5px;color:var(--gray);line-height:1.6;margin:10px 0 0;}
+  .calc-big{font-size:22px!important;}
+
   .foot{text-align:center;padding:16px;font-size:11.5px;color:var(--gray);border-top:1px solid var(--line);}
   .foot a{color:var(--orange-deep);text-decoration:none;font-weight:600;}
 
@@ -240,6 +252,7 @@
   <div class="tabs">
     <button class="tab active" data-view="dashboard">Dashboard</button>
     <button class="tab" data-view="journal">Jurnal</button>
+    <button class="tab" data-view="calc">Kalkulator</button>
     <button class="tab" data-view="accounts">Akun</button>
     <button class="tab" data-view="help">Bantuan</button>
   </div>
@@ -316,12 +329,93 @@
       <div class="tbl-wrap">
         <table class="tbl">
           <thead><tr><th>#</th><th>Tanggal</th><th>Market</th><th>Entry</th><th>SL</th><th>TP</th>
-            <th>Vol</th><th>Risk%</th><th>Risk$</th><th>R:R</th><th>Hasil</th>
-            <th>Net P/L $</th><th>Net P/L Rp</th><th>Strategi</th><th>TF</th><th>Alasan</th><th></th></tr></thead>
+            <th>Vol</th><th>Risk%</th><th id="th-risk">Risk $</th><th>R:R</th><th>Hasil</th>
+            <th id="th-netmain">Net P/L $</th><th id="th-netsub">Net P/L Rp</th><th>Strategi</th><th>TF</th><th>Alasan</th><th></th></tr></thead>
           <tbody id="journal-tbody"></tbody>
         </table>
         <div class="empty" id="journal-empty" style="display:none;">
           <b>Belum ada trade</b>Klik "+ Trade Baru" untuk mulai mengisi jurnal.
+        </div>
+      </div>
+    </div>
+
+    <!-- CALCULATOR -->
+    <div class="view" id="v-calc">
+      <div class="panel">
+        <h3>Setelan Instrumen</h3>
+        <div class="fgrid">
+          <div class="field s2"><label for="c-inst">Instrumen</label>
+            <select id="c-inst"></select></div>
+          <div class="field"><label for="c-contract">Contract Size</label>
+            <input type="number" step="any" id="c-contract"></div>
+          <div class="field"><label for="c-pip">Ukuran 1 Pip</label>
+            <input type="number" step="any" id="c-pip"></div>
+          <div class="field s2"><label for="c-price">Harga Sekarang</label>
+            <input type="number" step="any" id="c-price" placeholder="mis. 3300"></div>
+          <div class="field s2"><label for="c-cur">Satuan Hasil</label>
+            <select id="c-cur">
+              <option value="USD">USD — akun dolar</option>
+              <option value="USC">USC — akun cent</option>
+            </select></div>
+        </div>
+        <div class="calc-out" id="c-pipval"></div>
+        <p class="calc-note" id="c-inst-note"></p>
+      </div>
+
+      <div class="two-col">
+        <div class="panel">
+          <h3>Ukuran Lot dari Risiko</h3>
+          <p class="calc-note" style="margin-top:-4px;">Hitung berapa lot supaya kerugian saat kena SL persis sesuai risiko yang kamu tetapkan.</p>
+          <div class="fgrid" style="grid-template-columns:1fr 1fr;">
+            <div class="field"><label for="c-bal">Saldo</label>
+              <input type="number" step="any" id="c-bal" placeholder="1000"></div>
+            <div class="field"><label for="c-risk">Risk %</label>
+              <input type="number" step="any" id="c-risk" placeholder="1"></div>
+            <div class="field"><label for="c-ls-entry">Entry</label>
+              <input type="number" step="any" id="c-ls-entry"></div>
+            <div class="field"><label for="c-ls-sl">Stop Loss</label>
+              <input type="number" step="any" id="c-ls-sl"></div>
+          </div>
+          <div class="calc-out" id="c-lotout"></div>
+        </div>
+
+        <div class="panel">
+          <h3>Simulasi Profit / Loss</h3>
+          <p class="calc-note" style="margin-top:-4px;">Perkirakan hasil sebelum entry, atau cek berapa harusnya P/L dari trade yang sudah jalan.</p>
+          <div class="fgrid" style="grid-template-columns:1fr 1fr;">
+            <div class="field"><label for="c-pl-lot">Volume (Lot)</label>
+              <input type="number" step="any" id="c-pl-lot" placeholder="0.01"></div>
+            <div class="field"><label for="c-pl-dir">Arah</label>
+              <select id="c-pl-dir"><option value="buy">Buy / Long</option><option value="sell">Sell / Short</option></select></div>
+            <div class="field"><label for="c-pl-entry">Entry</label>
+              <input type="number" step="any" id="c-pl-entry"></div>
+            <div class="field"><label for="c-pl-exit">Exit</label>
+              <input type="number" step="any" id="c-pl-exit"></div>
+          </div>
+          <div class="calc-out" id="c-plout"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Cek Risk : Reward</h3>
+        <p class="calc-note" style="margin-top:-4px;">Lihat rasio R:R dan jarak pip sebelum pasang order.</p>
+        <div class="fgrid">
+          <div class="field"><label for="c-rr-entry">Entry</label><input type="number" step="any" id="c-rr-entry"></div>
+          <div class="field"><label for="c-rr-sl">Stop Loss</label><input type="number" step="any" id="c-rr-sl"></div>
+          <div class="field"><label for="c-rr-tp">Take Profit</label><input type="number" step="any" id="c-rr-tp"></div>
+          <div class="field"><label for="c-rr-lot">Volume (Lot)</label><input type="number" step="any" id="c-rr-lot" placeholder="0.01"></div>
+        </div>
+        <div class="calc-out" id="c-rrout"></div>
+      </div>
+
+      <div class="panel">
+        <h3>Catatan Penting</h3>
+        <div class="help-block">
+          <ul>
+            <li><b>Pip vs point.</b> Untuk XAUUSD, 1 pip = 0.1 (setara 10 point di MT5). Sebagian trader menyebut 0.01 sebagai "pip" — kalau kamu terbiasa begitu, ubah saja kolom Ukuran 1 Pip jadi 0.01.</li>
+            <li><b>Akun cent (USC).</b> Angka pip value-nya sama, cuma satuannya USC, bukan dolar. Contoh: 1 lot XAUUSD = 10 per pip — di akun standar artinya $10, di akun cent artinya 10 USC (setara $0,10).</li>
+            <li><b>Hasil ini perkiraan.</b> Belum termasuk spread, komisi, swap, dan slippage. Angka riil di broker akan sedikit berbeda — selalu cross-check contract size di spesifikasi kontrak broker kamu.</li>
+          </ul>
         </div>
       </div>
     </div>
@@ -343,7 +437,11 @@
           <div class="field s2"><label for="a-name">Nama Akun</label><input type="text" id="a-name" placeholder="Akun Utama"></div>
           <div class="field"><label for="a-broker">Broker</label><input type="text" id="a-broker" placeholder="EXNESS"></div>
           <div class="field"><label for="a-type">Tipe Akun</label><input type="text" id="a-type" placeholder="Standard / Raw Spread"></div>
-          <div class="field"><label for="a-currency">Currency</label><select id="a-currency"><option>USD</option><option>IDR</option></select></div>
+          <div class="field"><label for="a-currency">Currency</label><select id="a-currency">
+            <option value="USD">USD — Dolar</option>
+            <option value="USC">USC — Cent (akun sen)</option>
+            <option value="IDR">IDR — Rupiah</option>
+          </select></div>
           <div class="field"><label for="a-balance">Saldo Awal</label><input type="number" step="any" id="a-balance" placeholder="1000"></div>
           <div class="field"><label for="a-start">Start Date</label><input type="date" id="a-start"></div>
           <div class="field"><label for="a-status">Status</label><select id="a-status"><option>Active</option><option>Inactive</option></select></div>
@@ -403,6 +501,34 @@
           </ul>
           <p>Karena itu: klik <b>Backup</b> di tab Jurnal secara rutin (misalnya tiap akhir minggu).
           File backup bisa kamu <b>Restore</b> kapan saja, termasuk untuk pindah ke perangkat lain.</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Akun Cent (USC)</h3>
+        <div class="help-block">
+          <p>Kalau kamu pakai akun cent, pilih <b>USC</b> saat membuat akun, lalu isi saldo awal
+          <b>sesuai angka yang tampil di MT5</b> — bukan dikonversi dulu.
+          Contoh: deposit $10, MT5 menunjukkan 1.000 USC, maka isi <b>1000</b>.</p>
+          <p>Perhitungan 1 USD = 100 USC. Semua angka di dashboard dan jurnal otomatis tampil
+          dalam USC saat akun cent dipilih, dengan padanan Rupiah di bawahnya.</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Kalkulator</h3>
+        <div class="help-block">
+          <p>Tab <b>Kalkulator</b> berisi empat alat bantu:</p>
+          <ul>
+            <li><b>Nilai pip</b> — berapa rupiah/dolar yang bergerak tiap 1 pip di volume tertentu.</li>
+            <li><b>Ukuran lot dari risiko</b> — yang paling penting. Masukkan saldo, risk %, entry, dan SL;
+            hasilnya berapa lot yang harus dipakai supaya kerugian tepat sesuai batas risikomu.</li>
+            <li><b>Simulasi P/L</b> — perkiraan hasil dari entry ke exit.</li>
+            <li><b>Cek R:R</b> — rasio risk:reward beserta jarak pip masing-masing sisi.</li>
+          </ul>
+          <p>Instrumen umum seperti XAUUSD, EURUSD, dan USDJPY sudah terisi otomatis.
+          Untuk instrumen lain, pilih "Lainnya" dan isi contract size sendiri sesuai
+          spesifikasi kontrak brokermu.</p>
         </div>
       </div>
 
@@ -520,9 +646,39 @@
 
   /* ---------- HELPERS ---------- */
   const acctById=id=>accounts.find(a=>a.id===id);
-  function balUSD(a){return a.currency==='IDR'?(a.startBalance/(settings.kurs||1)):a.startBalance;}
+  function balUSD(a){
+    if(!a)return 0;
+    if(a.currency==='IDR')return a.startBalance/(settings.kurs||1);
+    if(a.currency==='USC')return a.startBalance/100;   // 1 USD = 100 USC
+    return a.startBalance;
+  }
   function money(n){return (n<0?'-$':'$')+Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+  function usc(n){return (n<0?'-':'')+Math.abs(n*100).toLocaleString('en-US',{maximumFractionDigits:0})+' USC';}
   function rupiah(n){return (n<0?'-Rp':'Rp')+Math.abs(n).toLocaleString('id-ID',{maximumFractionDigits:0});}
+
+  /* Mata uang akun yang sedang dipilih. Kalau "Semua Akun", pakai USD
+     supaya penjumlahan lintas akun tetap konsisten. */
+  function activeCurrency(){
+    const id=currentAccId();
+    if(!id)return 'USD';
+    const a=acctById(id);
+    return a?a.currency:'USD';
+  }
+  /* Format nilai USD ke mata uang akun aktif */
+  function fmtMain(usdVal){
+    const c=activeCurrency();
+    if(c==='USC')return usc(usdVal);
+    if(c==='IDR')return rupiah(usdVal*(settings.kurs||0));
+    return money(usdVal);
+  }
+  function mainUnit(){
+    const c=activeCurrency();
+    return c==='USC'?'USC':(c==='IDR'?'Rp':'$');
+  }
+  /* Baris kedua: kalau akun USD/USC tampilkan Rupiah, kalau IDR tampilkan USD */
+  function fmtSub(usdVal){
+    return activeCurrency()==='IDR'?money(usdVal):rupiah(usdVal*(settings.kurs||0));
+  }
   function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
   function compute(t){
@@ -571,18 +727,18 @@
     $('kpi-grid').innerHTML=
       kpi('Total Trades',s.total,'','neu')+
       kpi('Win Rate',s.total?s.winRate.toFixed(1)+'%':'—','',s.winRate>=50?'pos':'neu')+
-      kpi('Net P/L ($)',money(s.netUsd),rupiah(s.netRp),cls(s.netUsd))+
+      kpi('Net P/L ('+mainUnit()+')',fmtMain(s.netUsd),fmtSub(s.netUsd),cls(s.netUsd))+
       kpi('Profit Factor',s.total?(s.pf===Infinity?'∞':s.pf.toFixed(2)):'—','',s.pf>=1?'pos':'neu')+
-      kpi('Saldo Saat Ini',money(base+s.netUsd),'','neu')+
-      kpi('Max Drawdown',money(-s.maxDD),'',s.maxDD>0?'neg':'neu')+
+      kpi('Saldo Saat Ini',fmtMain(base+s.netUsd),fmtSub(base+s.netUsd),'neu')+
+      kpi('Max Drawdown',fmtMain(-s.maxDD),'',s.maxDD>0?'neg':'neu')+
       kpi('Avg R-Multiple',s.total?s.avgRR.toFixed(2)+'R':'—','',s.avgRR>=1?'pos':'neu')+
-      kpi('Expectancy / Trade',money(s.expectancy),'',cls(s.expectancy));
+      kpi('Expectancy / Trade',fmtMain(s.expectancy),'',cls(s.expectancy));
 
     $('stat-panel').innerHTML=[
       ['Winning Trades',s.wins],['Losing Trades',s.losses],['BE Trades',s.bes],
-      ['Avg Win ($)',money(s.avgWin)],['Avg Loss ($)',money(s.avgLoss)],
-      ['Avg R:R',s.avgRR.toFixed(2)],['Largest Win ($)',money(s.largestWin)],
-      ['Largest Loss ($)',money(s.largestLoss)]
+      ['Avg Win',fmtMain(s.avgWin)],['Avg Loss',fmtMain(s.avgLoss)],
+      ['Avg R:R',s.avgRR.toFixed(2)],['Largest Win',fmtMain(s.largestWin)],
+      ['Largest Loss',fmtMain(s.largestLoss)]
     ].map(([l,v])=>`<div class="stat-row"><span class="lbl">${l}</span><span class="v">${v}</span></div>`).join('');
 
     renderEquity(s.curve); renderDonut(s);
@@ -680,15 +836,18 @@
     fillSelect('jf-strategy','Semua Strategi',[...new Set(base.map(t=>t.strategy).filter(Boolean))].sort());
     const list=journalFiltered().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
     $('journal-empty').style.display=list.length?'none':'block';
+    const uh=$('th-netmain'); if(uh) uh.textContent='Net P/L '+mainUnit();
+    const rh=$('th-netsub'); if(rh) rh.textContent=activeCurrency()==='IDR'?'Net P/L $':'Net P/L Rp';
+    const kh=$('th-risk'); if(kh) kh.textContent='Risk '+mainUnit();
     $('journal-tbody').innerHTML=list.map((t,i)=>{
       const c=compute(t);
       const rc=t.result==='Win'?'win':t.result==='Loss'?'loss':'be';
       const uc=c.usd>0?'pos':c.usd<0?'neg':'neu';
       return `<tr><td>${list.length-i}</td><td>${esc(t.date)}</td><td>${esc(t.market)}</td>
         <td>${t.entry}</td><td>${t.sl}</td><td>${t.tp}</td><td>${t.vol==null?'-':t.vol}</td>
-        <td>${t.riskPct}%</td><td>${money(c.risk)}</td><td>${c.rr.toFixed(2)}</td>
+        <td>${t.riskPct}%</td><td>${fmtMain(c.risk)}</td><td>${c.rr.toFixed(2)}</td>
         <td><span class="pill ${rc}">${esc(t.result)}</span></td>
-        <td class="${uc}">${money(c.usd)}</td><td class="${uc}">${rupiah(c.rp)}</td>
+        <td class="${uc}">${fmtMain(c.usd)}</td><td class="${uc}">${fmtSub(c.usd)}</td>
         <td style="font-family:var(--sans)">${esc(t.strategy)||'-'}</td><td>${esc(t.tf)||'-'}</td>
         <td class="reason-cell" title="${esc(t.reason)}">${esc(t.reason)}</td>
         <td style="white-space:nowrap">
@@ -764,14 +923,18 @@
     if(!accounts.length){w.innerHTML='<div class="empty"><b>Belum ada akun</b>Tambah akun dulu sebelum mencatat trade.</div>';return;}
     w.innerHTML=accounts.map(a=>{
       const list=trades.filter(t=>t.accountId===a.id),s=stats(list);
+      const cur=balUSD(a)+s.netUsd;
+      const f=v=>a.currency==='USC'?usc(v):(a.currency==='IDR'?rupiah(v*(settings.kurs||0)):money(v));
+      const sub=a.currency==='IDR'?money(cur):rupiah(cur*(settings.kurs||0));
       return `<div class="acct-card">
         <div class="acct-info"><h4>${esc(a.name)}</h4>
           <div class="meta"><span class="dot ${a.status!=='Active'?'off':''}"></span>${esc(a.broker)||'—'} · ${esc(a.type)||'—'} · ${esc(a.currency)} · ${list.length} trade</div>
           ${a.notes?`<div class="meta" style="margin-top:3px;color:#9CA3AF;">${esc(a.notes)}</div>`:''}</div>
         <div style="display:flex;align-items:center;gap:15px;">
           <div class="acct-bal"><div class="st">Saldo Saat Ini</div>
-            <div class="cur ${s.netUsd>=0?'pos':'neg'}">${money(balUSD(a)+s.netUsd)}</div>
-            <div class="st" style="color:${s.netUsd>=0?'#16A34A':'#DC2626'}">${s.netUsd>=0?'+':''}${money(s.netUsd)} · WR ${s.total?s.winRate.toFixed(0):0}%</div></div>
+            <div class="cur ${s.netUsd>=0?'pos':'neg'}">${f(cur)}</div>
+            <div class="st" style="color:#9CA3AF">${sub}</div>
+            <div class="st" style="color:${s.netUsd>=0?'#16A34A':'#DC2626'}">${s.netUsd>=0?'+':''}${f(s.netUsd)} · WR ${s.total?s.winRate.toFixed(0):0}%</div></div>
           <div style="display:flex;flex-direction:column;gap:4px;">
             <button class="icon-btn edit" data-eacct="${a.id}" title="Edit">&#9998;</button>
             <button class="icon-btn" data-dacct="${a.id}" title="Hapus">&#10005;</button></div>
@@ -799,6 +962,191 @@
     $('acct-form').scrollIntoView({behavior:'smooth',block:'nearest'});
   }
 
+  /* ================= KALKULATOR ================= */
+  /* quote:'USD'  -> mata uang kutipan adalah USD (EURUSD, XAUUSD)
+     quote:'BASE' -> USD ada di depan (USDJPY, USDCAD), pip value dibagi harga */
+  const INSTRUMENTS={
+    'XAUUSD':{label:'XAUUSD — Emas',      contract:100,    pip:0.1,    quote:'USD', price:3300,
+              note:'1 lot = 100 troy ounce. 1 pip = 0.1 (setara 10 point di MT5).'},
+    'XAGUSD':{label:'XAGUSD — Perak',     contract:5000,   pip:0.01,   quote:'USD', price:38,
+              note:'1 lot = 5.000 troy ounce.'},
+    'EURUSD':{label:'EURUSD',             contract:100000, pip:0.0001, quote:'USD', price:1.08},
+    'GBPUSD':{label:'GBPUSD',             contract:100000, pip:0.0001, quote:'USD', price:1.27},
+    'AUDUSD':{label:'AUDUSD',             contract:100000, pip:0.0001, quote:'USD', price:0.65},
+    'NZDUSD':{label:'NZDUSD',             contract:100000, pip:0.0001, quote:'USD', price:0.59},
+    'USDJPY':{label:'USDJPY',             contract:100000, pip:0.01,   quote:'BASE',price:150,
+              note:'USD di depan, jadi pip value ikut berubah mengikuti harga.'},
+    'USDCAD':{label:'USDCAD',             contract:100000, pip:0.0001, quote:'BASE',price:1.36,
+              note:'USD di depan, jadi pip value ikut berubah mengikuti harga.'},
+    'USDCHF':{label:'USDCHF',             contract:100000, pip:0.0001, quote:'BASE',price:0.88,
+              note:'USD di depan, jadi pip value ikut berubah mengikuti harga.'},
+    'BTCUSD':{label:'BTCUSD',             contract:1,      pip:1,      quote:'USD', price:95000,
+              note:'1 lot = 1 BTC. Cek lagi contract size di broker kamu, tiap broker beda.'},
+    'ETHUSD':{label:'ETHUSD',             contract:1,      pip:0.1,    quote:'USD', price:3200},
+    'US30'  :{label:'US30 — Dow Jones',   contract:1,      pip:1,      quote:'USD', price:44000},
+    'NAS100':{label:'NAS100 — Nasdaq',    contract:1,      pip:1,      quote:'USD', price:20500},
+    'CUSTOM':{label:'Lainnya — isi manual',contract:100000,pip:0.0001, quote:'USD', price:1,
+              note:'Isi contract size & ukuran pip sesuai spesifikasi kontrak di broker kamu.'}
+  };
+
+  function calcCur(){return $('c-cur').value;}
+  function fmtCalc(v,dec){
+    const d=dec==null?2:dec;
+    const n=Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+    const sign=v<0?'-':'';
+    return calcCur()==='USC' ? sign+n+' USC' : sign+'$'+n;
+  }
+  function calcCfg(){
+    const contract=parseFloat($('c-contract').value);
+    const pip=parseFloat($('c-pip').value);
+    const price=parseFloat($('c-price').value);
+    const key=$('c-inst').value;
+    const quote=(INSTRUMENTS[key]||{}).quote||'USD';
+    return {contract,pip,price,quote,key};
+  }
+  /* Nilai 1 pip untuk 1.00 lot */
+  function pipValuePerLot(){
+    const c=calcCfg();
+    if(!(c.contract>0)||!(c.pip>0))return null;
+    const base=c.pip*c.contract;
+    if(c.quote==='BASE'){
+      if(!(c.price>0))return null;
+      return base/c.price;
+    }
+    return base;
+  }
+  function pipsBetween(a,b){
+    const c=calcCfg();
+    if(!(c.pip>0))return null;
+    return Math.abs(a-b)/c.pip;
+  }
+  function muted(id,msg){$(id).className='calc-out muted';$(id).textContent=msg;}
+  function out(id,items){
+    $(id).className='calc-out';
+    $(id).innerHTML=items.map(([l,v,cls])=>
+      `<div class="co"><span>${l}</span><b class="${cls||''}">${v}</b></div>`).join('');
+  }
+
+  function fillInstruments(){
+    $('c-inst').innerHTML=Object.entries(INSTRUMENTS)
+      .map(([k,v])=>`<option value="${k}">${v.label}</option>`).join('');
+  }
+  function applyInstrument(){
+    const it=INSTRUMENTS[$('c-inst').value];
+    if(!it)return;
+    $('c-contract').value=it.contract;
+    $('c-pip').value=it.pip;
+    if(!$('c-price').value||$('c-inst').dataset.touched!=='1'){$('c-price').value=it.price;}
+    $('c-inst').dataset.touched='1';
+    $('c-inst-note').textContent=it.note||'';
+    runCalc();
+  }
+
+  function calcPipVal(){
+    const pv=pipValuePerLot();
+    if(pv==null){muted('c-pipval','Lengkapi contract size, ukuran pip, dan harga sekarang.');return;}
+    out('c-pipval',[
+      ['Per 1.00 lot',fmtCalc(pv)],
+      ['Per 0.10 lot',fmtCalc(pv*0.1)],
+      ['Per 0.01 lot',fmtCalc(pv*0.01,3)]
+    ]);
+  }
+
+  function calcLotSize(){
+    const bal=parseFloat($('c-bal').value), risk=parseFloat($('c-risk').value);
+    const e=parseFloat($('c-ls-entry').value), sl=parseFloat($('c-ls-sl').value);
+    const pv=pipValuePerLot();
+    if(isNaN(bal)||isNaN(risk)||isNaN(e)||isNaN(sl)||pv==null){
+      muted('c-lotout','Isi saldo, risk %, entry, dan stop loss.');return;}
+    if(e===sl){muted('c-lotout','Entry dan Stop Loss tidak boleh sama.');return;}
+    if(bal<=0||risk<=0){muted('c-lotout','Saldo dan risk % harus lebih dari 0.');return;}
+    const riskAmt=bal*(risk/100);
+    const pips=pipsBetween(e,sl);
+    const lots=riskAmt/(pips*pv);
+    out('c-lotout',[
+      ['Jarak SL',pips.toFixed(1)+' pips'],
+      ['Nilai Risiko',fmtCalc(riskAmt)],
+      ['Lot Disarankan','<span class="calc-big">'+lots.toFixed(2)+'</span>','pos']
+    ]);
+    $('c-lotout').insertAdjacentHTML('beforeend',
+      `<div style="flex-basis:100%;font-size:11.5px;color:var(--gray);margin-top:2px;">
+        Lot presisi: <b style="font-family:var(--mono)">${lots.toFixed(4)}</b> — broker biasanya
+        membulatkan ke 0,01. Kalau dibulatkan ke bawah jadi
+        <b style="font-family:var(--mono)">${(Math.floor(lots*100)/100).toFixed(2)}</b>,
+        risikonya ${fmtCalc(Math.floor(lots*100)/100*pips*pv)}.
+      </div>`);
+  }
+
+  function calcPL(){
+    const lot=parseFloat($('c-pl-lot').value), e=parseFloat($('c-pl-entry').value),
+          x=parseFloat($('c-pl-exit').value), dir=$('c-pl-dir').value;
+    const pv=pipValuePerLot();
+    if(isNaN(lot)||isNaN(e)||isNaN(x)||pv==null){
+      muted('c-plout','Isi volume, entry, dan exit.');return;}
+    if(lot<=0){muted('c-plout','Volume harus lebih dari 0.');return;}
+    const c=calcCfg();
+    const signed=(dir==='buy'?(x-e):(e-x))/c.pip;
+    const pl=signed*pv*lot;
+    out('c-plout',[
+      ['Pergerakan',(signed>=0?'+':'')+signed.toFixed(1)+' pips',signed>=0?'pos':'neg'],
+      ['Nilai / Pip',fmtCalc(pv*lot,3)],
+      ['Hasil','<span class="calc-big">'+fmtCalc(pl)+'</span>',pl>=0?'pos':'neg']
+    ]);
+  }
+
+  function calcRR(){
+    const e=parseFloat($('c-rr-entry').value), sl=parseFloat($('c-rr-sl').value),
+          tp=parseFloat($('c-rr-tp').value), lot=parseFloat($('c-rr-lot').value);
+    const pv=pipValuePerLot();
+    if(isNaN(e)||isNaN(sl)||isNaN(tp)||pv==null){
+      muted('c-rrout','Isi entry, stop loss, dan take profit.');return;}
+    if(e===sl){muted('c-rrout','Entry dan Stop Loss tidak boleh sama.');return;}
+    const slPips=pipsBetween(e,sl), tpPips=pipsBetween(e,tp);
+    const rr=tpPips/slPips;
+    const items=[
+      ['Jarak SL',slPips.toFixed(1)+' pips'],
+      ['Jarak TP',tpPips.toFixed(1)+' pips'],
+      ['R:R','<span class="calc-big">1 : '+rr.toFixed(2)+'</span>',rr>=1?'pos':'neg']
+    ];
+    if(!isNaN(lot)&&lot>0){
+      items.push(['Rugi jika SL',fmtCalc(-slPips*pv*lot),'neg']);
+      items.push(['Untung jika TP',fmtCalc(tpPips*pv*lot),'pos']);
+    }
+    out('c-rrout',items);
+    const dirOK=(tp>e&&sl<e)||(tp<e&&sl>e);
+    if(!dirOK){
+      $('c-rrout').insertAdjacentHTML('beforeend',
+        `<div style="flex-basis:100%;font-size:12px;color:#B91C1C;margin-top:4px;">
+          Perhatikan: SL dan TP ada di sisi yang sama dari Entry. Cek lagi arah ordernya.</div>`);
+    }
+  }
+
+  function runCalc(){calcPipVal();calcLotSize();calcPL();calcRR();}
+
+  function initCalc(){
+    fillInstruments();
+    $('c-inst').value='XAUUSD';
+    applyInstrument();
+    $('c-inst').addEventListener('change',()=>{$('c-inst').dataset.touched='0';applyInstrument();});
+    ['c-contract','c-pip','c-price','c-cur','c-bal','c-risk','c-ls-entry','c-ls-sl',
+     'c-pl-lot','c-pl-dir','c-pl-entry','c-pl-exit',
+     'c-rr-entry','c-rr-sl','c-rr-tp','c-rr-lot'].forEach(id=>{
+      $(id).addEventListener('input',runCalc);
+      $(id).addEventListener('change',runCalc);
+    });
+  }
+
+  /* Saat pindah ke tab Kalkulator, isi otomatis dari akun yang sedang dipilih */
+  function syncCalcWithAccount(){
+    const id=currentAccId();
+    const a=id?acctById(id):(accounts.length===1?accounts[0]:null);
+    if(!a)return;
+    if(!$('c-bal').value){
+      $('c-bal').value = a.currency==='USC' ? a.startBalance : balUSD(a).toFixed(2);
+    }
+    $('c-cur').value = a.currency==='USC' ? 'USC' : 'USD';
+    runCalc();
+  }
   /* ---------- BACKUP / RESTORE / CSV ---------- */
   function download(name,content,type){
     const blob=new Blob([content],{type});const url=URL.createObjectURL(blob);
@@ -873,6 +1221,7 @@
     document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.view===view));
     document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
     $('v-'+view).classList.add('active');
+    if(view==='calc')syncCalcWithAccount();
   }
   document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>go(t.dataset.view));
   $('acct-filter').onchange=()=>{
@@ -936,6 +1285,7 @@
     accounts=(await store.get(K_ACC))||[];
     trades=(await store.get(K_TR))||[];
     settings=(await store.get(K_SET))||{kurs:17000};
+    initCalc();
     renderAll();
     updateStorageNotice();
     const unlocked=await store.get(K_GATE);
